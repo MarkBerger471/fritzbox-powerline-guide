@@ -1,0 +1,1788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FRITZ!Box 6660 Cable + Powerline LAN Bridge Setup Guide</title>
+    <style>
+        :root {
+            --fritz-red: #cc0000;
+            --fritz-dark: #1a1a2e;
+            --fritz-blue: #0f3460;
+            --accent: #e94560;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --info: #3498db;
+            --bg: #f5f6fa;
+            --card-bg: #ffffff;
+            --text: #2c3e50;
+            --text-light: #7f8c8d;
+            --border: #dcdde1;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+
+        /* Header */
+        .hero {
+            background: linear-gradient(135deg, var(--fritz-dark) 0%, var(--fritz-blue) 100%);
+            color: white;
+            padding: 60px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(233,69,96,0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .hero h1 {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .hero .badge {
+            display: inline-block;
+            background: var(--accent);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            margin-top: 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Navigation */
+        .toc {
+            background: var(--card-bg);
+            max-width: 900px;
+            margin: -30px auto 30px;
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 2;
+        }
+
+        .toc h2 {
+            color: var(--fritz-blue);
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .toc ol {
+            padding-left: 20px;
+        }
+
+        .toc li {
+            margin: 8px 0;
+        }
+
+        .toc a {
+            color: var(--fritz-blue);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .toc a:hover {
+            color: var(--accent);
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px 60px;
+        }
+
+        /* Problem Section */
+        .problem-box {
+            background: linear-gradient(135deg, #fff5f5 0%, #ffe8e8 100%);
+            border-left: 5px solid var(--danger);
+            border-radius: 8px;
+            padding: 25px 30px;
+            margin: 30px 0;
+        }
+
+        .problem-box h2 {
+            color: var(--danger);
+            margin-bottom: 15px;
+        }
+
+        .problem-box ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .problem-box li {
+            padding: 5px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .problem-box li::before {
+            content: '\26A0';
+            position: absolute;
+            left: 0;
+        }
+
+        /* Solution Section */
+        .solution-box {
+            background: linear-gradient(135deg, #f0fff4 0%, #e8f8e8 100%);
+            border-left: 5px solid var(--success);
+            border-radius: 8px;
+            padding: 25px 30px;
+            margin: 30px 0;
+        }
+
+        .solution-box h2 {
+            color: var(--success);
+            margin-bottom: 15px;
+        }
+
+        /* Step Sections */
+        .step-section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 35px 40px;
+            margin: 30px 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            border: 1px solid var(--border);
+        }
+
+        .step-section h2 {
+            color: var(--fritz-blue);
+            font-size: 1.6em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: var(--accent);
+            color: white;
+            border-radius: 50%;
+            font-size: 1.1em;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .step-section h3 {
+            color: var(--fritz-blue);
+            margin: 20px 0 10px;
+            font-size: 1.15em;
+        }
+
+        /* Screenshot Mockups */
+        .screenshot {
+            background: #f8f9fa;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .screenshot-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85em;
+        }
+
+        .screenshot-header .dots {
+            display: flex;
+            gap: 5px;
+        }
+
+        .screenshot-header .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .dot-red { background: #e74c3c; }
+        .dot-yellow { background: #f39c12; }
+        .dot-green { background: #27ae60; }
+
+        .screenshot-header .url-bar {
+            background: rgba(255,255,255,0.15);
+            padding: 4px 12px;
+            border-radius: 4px;
+            flex: 1;
+            font-family: monospace;
+        }
+
+        .screenshot-body {
+            padding: 0;
+        }
+
+        /* Fritz UI Mockup */
+        .fritz-ui {
+            display: flex;
+            min-height: 350px;
+        }
+
+        .fritz-sidebar {
+            width: 220px;
+            background: linear-gradient(180deg, #cc0000 0%, #a00000 100%);
+            color: white;
+            padding: 15px 0;
+            flex-shrink: 0;
+        }
+
+        .fritz-logo {
+            text-align: center;
+            padding: 10px 15px 20px;
+            font-weight: bold;
+            font-size: 1.1em;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            margin-bottom: 10px;
+        }
+
+        .fritz-logo span {
+            color: #ffcccc;
+            font-size: 0.7em;
+            display: block;
+        }
+
+        .fritz-menu-item {
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .fritz-menu-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .fritz-menu-item.active {
+            background: rgba(255,255,255,0.2);
+            font-weight: bold;
+            border-left: 3px solid white;
+        }
+
+        .fritz-menu-item.sub {
+            padding-left: 40px;
+            font-size: 0.85em;
+        }
+
+        .fritz-menu-item.sub.active {
+            background: rgba(255,255,255,0.25);
+        }
+
+        .fritz-content {
+            flex: 1;
+            padding: 25px;
+            background: white;
+        }
+
+        .fritz-content h3 {
+            color: var(--fritz-red);
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #eee;
+        }
+
+        /* Form Elements */
+        .fritz-form-group {
+            margin: 15px 0;
+            padding: 12px 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+        }
+
+        .fritz-form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 0.95em;
+        }
+
+        .fritz-radio {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 0;
+            font-size: 0.9em;
+        }
+
+        .fritz-radio input[type="radio"] {
+            accent-color: var(--fritz-red);
+            width: 16px;
+            height: 16px;
+        }
+
+        .fritz-radio.recommended {
+            background: #e8f5e9;
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 2px solid var(--success);
+        }
+
+        .fritz-radio.not-recommended {
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+
+        .fritz-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 6px 0;
+            font-size: 0.9em;
+        }
+
+        .fritz-input label {
+            min-width: 120px;
+            font-weight: normal;
+            margin-bottom: 0;
+        }
+
+        .fritz-input input[type="text"] {
+            border: 1px solid #ccc;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.95em;
+            width: 180px;
+        }
+
+        .fritz-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 0;
+            font-size: 0.9em;
+        }
+
+        .fritz-checkbox input[type="checkbox"] {
+            accent-color: var(--fritz-red);
+            width: 16px;
+            height: 16px;
+        }
+
+        .fritz-btn {
+            display: inline-block;
+            background: var(--fritz-red);
+            color: white;
+            padding: 8px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.9em;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .fritz-btn:hover {
+            background: #a00000;
+        }
+
+        /* Highlight annotation */
+        .highlight-arrow {
+            display: inline-block;
+            background: #ffe066;
+            color: #333;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-left: 10px;
+            animation: blink 1.5s ease-in-out infinite;
+            border: 2px solid #f0c000;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .annotation {
+            position: relative;
+            display: inline-block;
+        }
+
+        .annotation-badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: var(--success);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75em;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* Step instructions alongside screenshots */
+        .instruction-row {
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+            margin: 12px 0;
+        }
+
+        .instruction-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 30px;
+            height: 30px;
+            background: var(--info);
+            color: white;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 0.85em;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .instruction-text {
+            flex: 1;
+        }
+
+        .instruction-text strong {
+            color: var(--fritz-blue);
+        }
+
+        .instruction-text code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.9em;
+            color: var(--accent);
+        }
+
+        /* Alert boxes */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .alert-icon {
+            font-size: 1.3em;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            border: 1px solid #28a745;
+            color: #155724;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            border: 1px solid #17a2b8;
+            color: #0c5460;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            border: 1px solid #dc3545;
+            color: #721c24;
+        }
+
+        /* Network Diagram */
+        .network-diagram {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 30px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .diagram-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        .diagram-device {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 15px 20px;
+            min-width: 140px;
+            text-align: center;
+            position: relative;
+        }
+
+        .diagram-device.router {
+            background: linear-gradient(135deg, #ffe8e8, #ffcccc);
+            border-color: var(--fritz-red);
+        }
+
+        .diagram-device.powerline {
+            background: linear-gradient(135deg, #e8f0ff, #cce0ff);
+            border-color: var(--info);
+        }
+
+        .diagram-device.huawei {
+            background: linear-gradient(135deg, #e8ffe8, #ccffcc);
+            border-color: var(--success);
+        }
+
+        .diagram-device .icon {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        .diagram-device .name {
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .diagram-device .ip {
+            font-family: monospace;
+            font-size: 0.8em;
+            color: var(--text-light);
+            margin-top: 3px;
+        }
+
+        .diagram-arrow {
+            font-size: 1.5em;
+            color: var(--text-light);
+        }
+
+        .diagram-label {
+            font-size: 0.8em;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .diagram-wrong {
+            border: 3px dashed var(--danger);
+            position: relative;
+        }
+
+        .diagram-wrong::after {
+            content: 'WRONG';
+            position: absolute;
+            top: -12px;
+            right: -10px;
+            background: var(--danger);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7em;
+            font-weight: bold;
+        }
+
+        .diagram-correct {
+            border: 3px solid var(--success);
+            position: relative;
+        }
+
+        .diagram-correct::after {
+            content: 'CORRECT';
+            position: absolute;
+            top: -12px;
+            right: -10px;
+            background: var(--success);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7em;
+            font-weight: bold;
+        }
+
+        /* Checklist */
+        .checklist {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px 25px;
+            margin: 20px 0;
+        }
+
+        .checklist h4 {
+            margin-bottom: 12px;
+            color: var(--fritz-blue);
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 0.95em;
+        }
+
+        .checklist-item:last-child {
+            border-bottom: none;
+        }
+
+        .check-icon {
+            font-size: 1.1em;
+        }
+
+        /* Comparison Table */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.9em;
+        }
+
+        .comparison-table th {
+            background: var(--fritz-blue);
+            color: white;
+            padding: 12px 15px;
+            text-align: left;
+        }
+
+        .comparison-table td {
+            padding: 10px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .comparison-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .comparison-table .bad {
+            color: var(--danger);
+            font-weight: bold;
+        }
+
+        .comparison-table .good {
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        /* Menu Path */
+        .menu-path {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #eef2ff;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin: 3px 0;
+            font-weight: 500;
+            color: var(--fritz-blue);
+        }
+
+        .menu-path .separator {
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--fritz-dark);
+            color: rgba(255,255,255,0.7);
+            text-align: center;
+            padding: 30px 20px;
+            font-size: 0.85em;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 1.8em; }
+            .fritz-ui { flex-direction: column; }
+            .fritz-sidebar { width: 100%; }
+            .step-section { padding: 25px 20px; }
+            .toc { padding: 20px; }
+            .diagram-row { flex-direction: column; }
+            .diagram-arrow { transform: rotate(90deg); }
+        }
+
+        /* Print styles */
+        @media print {
+            .hero { padding: 20px; }
+            .step-section { break-inside: avoid; }
+            .screenshot { break-inside: avoid; }
+        }
+
+        /* Smooth scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Back to top */
+        .back-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--fritz-red);
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-size: 1.2em;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+            z-index: 100;
+        }
+
+        .back-to-top:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+
+<div class="hero" id="top">
+    <h1>FRITZ!Box 6660 Cable + Powerline<br>LAN Bridge Setup Guide</h1>
+    <p class="subtitle">Fix your Huawei FusionSolar connection drops by correctly configuring your FRITZ Powerline adapter as a LAN Bridge</p>
+    <div class="badge">For FRITZ!Box 6660 Cable &amp; FRITZ Powerline Adapters</div>
+</div>
+
+<!-- Table of Contents -->
+<div class="toc">
+    <h2>Table of Contents</h2>
+    <ol>
+        <li><a href="#problem">Understanding the Problem</a></li>
+        <li><a href="#network-overview">Network Diagram: Wrong vs. Correct Setup</a></li>
+        <li><a href="#step1">Step 1: Set Powerline to LAN Bridge Mode</a></li>
+        <li><a href="#step2">Step 2: Disable DHCP &amp; Set Static IP</a></li>
+        <li><a href="#step3">Step 3: Enable Mesh in FRITZ!Box</a></li>
+        <li><a href="#step4">Step 4: Assign Static IP to Huawei Device</a></li>
+        <li><a href="#step5">Step 5: Verification &amp; Quick Test</a></li>
+        <li><a href="#troubleshooting">Troubleshooting</a></li>
+    </ol>
+</div>
+
+<div class="container">
+
+    <!-- Problem Section -->
+    <div class="problem-box" id="problem">
+        <h2>The Problem: Why FusionSolar Keeps Disconnecting</h2>
+        <p style="margin-bottom: 12px;">When using a FRITZ Powerline adapter with a LAN connection, a very common misconfiguration occurs:</p>
+        <ul>
+            <li>The Powerline adapter runs in <strong>"Router" or "Access Point" mode</strong> instead of <strong>"LAN Bridge" mode</strong></li>
+            <li>In the wrong mode, it creates its <strong>own separate mini-network</strong></li>
+            <li>It assigns <strong>its own IP addresses</strong> via its own DHCP server</li>
+            <li>Your Huawei device gets <strong>logically separated</strong> from the FRITZ!Box router</li>
+        </ul>
+        <p style="margin-top: 12px;"><strong>Result:</strong> FusionSolar loses connection, experiences frequent dropouts, and cannot maintain stable communication.</p>
+    </div>
+
+    <!-- Solution Overview -->
+    <div class="solution-box">
+        <h2>The Solution: 4-Step Fix</h2>
+        <p>We will configure your FRITZ Powerline adapter as a transparent <strong>LAN Bridge</strong>, disable its DHCP server, enable Mesh, and give your Huawei device a fixed IP address. This ensures all devices are on the same network.</p>
+    </div>
+
+    <!-- Network Diagram -->
+    <div class="step-section" id="network-overview">
+        <h2><span class="step-number">!</span> Network Diagram: Wrong vs. Correct Setup</h2>
+
+        <h3 style="color: var(--danger);">WRONG Configuration (causes disconnections):</h3>
+        <div class="network-diagram">
+            <div class="diagram-row">
+                <div class="diagram-device router">
+                    <div class="icon">&#x1F4E1;</div>
+                    <div class="name">FRITZ!Box 6660</div>
+                    <div class="ip">192.168.178.1</div>
+                    <div class="diagram-label">Network A</div>
+                </div>
+                <div class="diagram-arrow">&#x2194;&#xFE0F;</div>
+                <div class="diagram-device powerline diagram-wrong">
+                    <div class="icon">&#x1F50C;</div>
+                    <div class="name">Powerline (Router Mode)</div>
+                    <div class="ip">192.168.188.1</div>
+                    <div class="diagram-label">Network B (separate!)</div>
+                </div>
+                <div class="diagram-arrow">&#x2194;&#xFE0F;</div>
+                <div class="diagram-device huawei">
+                    <div class="icon">&#x2600;&#xFE0F;</div>
+                    <div class="name">Huawei FusionSolar</div>
+                    <div class="ip">192.168.188.x</div>
+                    <div class="diagram-label">Wrong network!</div>
+                </div>
+            </div>
+            <div class="alert alert-danger" style="text-align: left; margin-top: 15px;">
+                <div class="alert-icon">&#x26D4;</div>
+                <div>Two separate networks! The Huawei device cannot properly communicate with the FRITZ!Box and the internet. FusionSolar connections will drop repeatedly.</div>
+            </div>
+        </div>
+
+        <h3 style="color: var(--success);">CORRECT Configuration (stable connection):</h3>
+        <div class="network-diagram">
+            <div class="diagram-row">
+                <div class="diagram-device router">
+                    <div class="icon">&#x1F4E1;</div>
+                    <div class="name">FRITZ!Box 6660</div>
+                    <div class="ip">192.168.178.1</div>
+                </div>
+                <div class="diagram-arrow">&#x2194;&#xFE0F;</div>
+                <div class="diagram-device powerline diagram-correct">
+                    <div class="icon">&#x1F50C;</div>
+                    <div class="name">Powerline (LAN Bridge)</div>
+                    <div class="ip">192.168.178.2</div>
+                </div>
+                <div class="diagram-arrow">&#x2194;&#xFE0F;</div>
+                <div class="diagram-device huawei">
+                    <div class="icon">&#x2600;&#xFE0F;</div>
+                    <div class="name">Huawei FusionSolar</div>
+                    <div class="ip">192.168.178.x</div>
+                </div>
+            </div>
+            <div style="margin-top: 10px; font-size: 0.85em; color: var(--success); font-weight: bold;">
+                &#x2705; All devices on the SAME network (192.168.178.x) &mdash; One unified network!
+            </div>
+            <div class="alert alert-success" style="text-align: left; margin-top: 15px;">
+                <div class="alert-icon">&#x2705;</div>
+                <div>Single unified network! The Powerline adapter is transparent &mdash; it simply extends the FRITZ!Box network. The Huawei device gets an IP from the FRITZ!Box and has full, stable connectivity.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================== -->
+    <!-- STEP 1: LAN Bridge Mode        -->
+    <!-- ============================== -->
+    <div class="step-section" id="step1">
+        <h2><span class="step-number">1</span> Set Powerline Adapter to LAN Bridge Mode</h2>
+
+        <div class="alert alert-info">
+            <div class="alert-icon">&#x2139;&#xFE0F;</div>
+            <div>This is the most important step! Setting the Powerline adapter to LAN Bridge mode ensures it acts as a transparent network extender, not a separate router.</div>
+        </div>
+
+        <h3>Access the Powerline Admin Interface</h3>
+
+        <div class="instruction-row">
+            <div class="instruction-number">1</div>
+            <div class="instruction-text">
+                <strong>Connect your computer</strong> directly to the Powerline adapter via LAN cable (or connect to its Wi-Fi if available).
+            </div>
+        </div>
+
+        <div class="instruction-row">
+            <div class="instruction-number">2</div>
+            <div class="instruction-text">
+                <strong>Open your web browser</strong> and type <code>http://fritz.powerline</code> in the address bar.<br>
+                <em>If that doesn't work, try: <code>http://192.168.178.2</code> or <code>http://169.254.1.1</code></em>
+            </div>
+        </div>
+
+        <div class="instruction-row">
+            <div class="instruction-number">3</div>
+            <div class="instruction-text">
+                <strong>Log in</strong> with the password printed on the bottom of your Powerline adapter (or your custom password).
+            </div>
+        </div>
+
+        <h3>Navigate to Network Settings</h3>
+
+        <div class="instruction-row">
+            <div class="instruction-number">4</div>
+            <div class="instruction-text">
+                In the left sidebar, navigate to:<br>
+                <span class="menu-path">Home Network <span class="separator">&rsaquo;</span> Network <span class="separator">&rsaquo;</span> Network Settings</span>
+            </div>
+        </div>
+
+        <!-- Screenshot: Powerline UI - Operating Mode -->
+        <div class="screenshot">
+            <div class="screenshot-header">
+                <div class="dots">
+                    <div class="dot dot-red"></div>
+                    <div class="dot dot-yellow"></div>
+                    <div class="dot dot-green"></div>
+                </div>
+                <div class="url-bar">http://fritz.powerline</div>
+            </div>
+            <div class="screenshot-body">
+                <div class="fritz-ui">
+                    <div class="fritz-sidebar">
+                        <div class="fritz-logo">
+                            FRITZ!Powerline<br>
+                            <span>1260E / 1240E</span>
+                        </div>
+                        <div class="fritz-menu-item">Overview</div>
+                        <div class="fritz-menu-item">Powerline</div>
+                        <div class="fritz-menu-item active">Home Network</div>
+                        <div class="fritz-menu-item sub active">Network</div>
+                        <div class="fritz-menu-item">WLAN</div>
+                        <div class="fritz-menu-item">System</div>
+                    </div>
+                    <div class="fritz-content">
+                        <h3>Network Settings</h3>
+
+                        <div class="fritz-form-group">
+                            <label>Operating Mode</label>
+
+                            <div class="fritz-radio not-recommended">
+                                <input type="radio" name="mode" id="mode-router">
+                                <label for="mode-router">Router / Access Point</label>
+                                <span style="color: var(--danger); font-size: 0.8em; text-decoration: none;">&larr; DO NOT USE</span>
+                            </div>
+
+                            <div class="fritz-radio not-recommended">
+                                <input type="radio" name="mode" id="mode-wlan">
+                                <label for="mode-wlan">WLAN Bridge</label>
+                                <span style="color: var(--warning); font-size: 0.8em; text-decoration: none;">&larr; Not for LAN devices</span>
+                            </div>
+
+                            <div class="fritz-radio recommended">
+                                <input type="radio" name="mode" id="mode-lan" checked>
+                                <label for="mode-lan" style="font-weight: bold;">LAN Bridge</label>
+                                <span class="highlight-arrow">&#x2190; SELECT THIS!</span>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-warning" style="font-size: 0.85em;">
+                            <div class="alert-icon">&#x26A0;&#xFE0F;</div>
+                            <div><strong>Important:</strong> Select <strong>"LAN Bridge"</strong> (German: "LAN-Br&uuml;cke"), NOT "WLAN Bridge"! LAN Bridge ensures all wired devices are transparently connected to your main FRITZ!Box network.</div>
+                        </div>
+
+                        <button class="fritz-btn">Apply / &Uuml;bernehmen</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="instruction-row">
+            <div class="instruction-number">5</div>
+            <div class="instruction-text">
+                <strong>Find the "Operating Mode"</strong> setting (German: "Betriebsart" or "Netzwerkmodus").
+            </div>
+        </div>
+
+        <div class="instruction-row">
+            <div class="instruction-number">6</div>
+            <div class="instruction-text">
+                <strong>Select "LAN Bridge"</strong> (German: "LAN-Br&uuml;cke").<br>
+                <em>Do NOT select "WLAN Bridge" &mdash; that is for wireless-only bridging.</em>
+            </div>
+        </div>
+
+        <div class="instruction-row">
+            <div class="instruction-number">7</div>
+            <div class="instruction-text">
+                <strong>Click "Apply"</strong> (German: "&Uuml;bernehmen") to save the setting. The device will restart.
+            </div>
+        </div>
+
+        <div class="alert alert-warning">
+            <div class="alert-icon">&#x26A0;&#xFE0F;</div>
+            <div><strong>After switching to LAN Bridge mode,</strong> the Powerline adapter will no longer be accessible at its old IP. You may need to access it via <code>http://fritz.powerline</code> or find its new IP in the FRITZ!Box network overview.</div>
+        </div>
+    </div>
+
+    <!-- ============================== -->
+    <!-- STEP 2: Disable DHCP           -->
+    <!-- ============================== -->
+    <div class="step-section" id="step2">
+        <h2><span class="step-number">2</span> Disable DHCP &amp; Set Static IP on Powerline</h2>
+
+        <div class="alert alert-info">
+            <div class="alert-icon">&#x2139;&#xFE0F;</div>
+            <div>Only the FRITZ!Box 6660 should assign IP addresses. The Powerline adapter must NOT run its own DHCP server.</div>
+        </div>
+
+        <h3>Configure IP Settings</h3>
+
+        <div class="instruction-row">
+            <div class="instruction-number">1</div>
+            <div class="instruction-text">
+                <strong>Access the Powerline interface</strong> again at <code>http://fritz.powerline</code>
+            </div>
+        </div>
+
+        <div class="instruction-row">
+            <div class="instruction-number">2</div>
+            <div class="instruction-text">
+                Navigate to:<br>
+                <span class="menu-path">Home Network <span class="separator">&rsaquo;</span> Network <span class="separator">&rsaquo;</span> Network Settings</span>
+            </div>
+        </div>
+
+        <!-- Screenshot: DHCP and IP Settings -->
+        <div class="screenshot">
+            <div class="screenshot-header">
+                <div class="dots">
+                    <div class="dot dot-red"></div>
+                    <div class="dot dot-yellow"></div>
+                    <div class="dot dot-green"></div>
+                </div>
+                <div class="url-bar">http://fritz.powerline</div>
+            </div>
+            <div class="screenshot-body">
+                <div class="fritz-ui">
+                    <div class="fritz-sidebar">
+                        <div class="fritz-logo">
+                            FRITZ!Powerline<br>
+                            <span>1260E / 1240E</span>
+                        </div>
+                        <div class="fritz-menu-item">Overview</div>
+                        <div class="fritz-menu-item">Powerline</div>
+                        <div class="fritz-menu-item active">Home Network</div>
+                        <div class="fritz-menu-item sub active">Network</div>
+                        <div class="fritz-menu-item">WLAN</div>
+                        <div class="fritz-menu-item">System</div>
+                    </div>
+                    <div class="fritz-content">
+                        <h3>IP Settings</h3>
+
+                        <div class="fritz-form-group">
+                            <label>DHCP Server</label>
+
+                            <div class="fritz-checkbox" style="background: #fde8e8; padding: 8px 12px; border-radius: 4px; border: 2px solid var(--danger);">
+                                <input type="checkbox" id="dhcp-off">
+                                <label for="dhcp-off">Enable DHCP Server</label>
+                                <span class="highlight-arrow">&#x2190; UNCHECK THIS! (Must be OFF)</span>
+                            </div>
+                        </div>
+
+                        <div class="fritz-form-group" style="border: 2px solid var(--success); background: #e8f5e9;">
+                            <label>Static IP Configuration <span class="highlight-arrow">&#x2190; SET THESE VALUES</span></label>
+
+                            <div class="fritz-input">
+                                <label>IP Address:</label>
+                                <input type="text" value="192.168.178.2" readonly style="border-color: var(--success); background: #f0fff0;">
+                            </div>
+
+                            <div class="fritz-input">
+                                <label>Subnet Mask:</label>
+                                <input type="text" value="255.255.255.0" readonly>
+                            </div>
+
+                            <div class="fritz-input">
+                                <label>Default Gateway:</label>
+                                <input type="text" value="192.168.178.1" readonly style="border-color: var(--success); background: #f0fff0;">
+                            </div>
+
+                            <div class="fritz-input">
+                                <label>DNS Server:</label>
+                                <input type="text" value="192.168.178.1" readonly>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info" style="font-size: 0.85em;">
+                            <div class="alert-icon">&#x1F4A1;</div>
+                            <div><strong>Key rule:</strong> The IP must be in the <strong>same range</strong> as your FRITZ!Box (192.168.178.x). The gateway must point to the FRITZ!Box (192.168.178.1).</div>
+                        </div>
+
+                        <button class="fritz-btn">Apply / &Uuml;bernehmen</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="instruction-row">
+            <div class="instruction-number">3</div>
+            <div class="instruction-text">
+                <strong>Disable the DHCP server</strong> &mdash; uncheck the "Enable DHCP Server" checkbox.
+            </div>
+        </div>
+
+        <div class="instruction-row">
+            <div class="instruction-number">4</div>
+            <div class="instruction-text">
+                <strong>Set a static IP address</strong> for the Powerline adapter:
+            </div>
+        </div>
+
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>Setting</th>
+                    <th>Value</th>
+                    <th>Explanation</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>IP Address</strong></td>
+                    <td><code>192.168.178.2</code></td>
+                    <td>Same subnet as FRITZ!Box, unique address</td>
+                </tr>
+                <tr>
+                    <td><strong>Subnet Mask</strong></td>
+                    <td><code>255.255.255.0</code></td>
+                    <td>Standard subnet mask</td>
+                </tr>
+                <tr>
+                    <td><strong>Gateway</strong></td>
+                    <td><code>192.168.178.1</code></td>
+                    <td>Points to the FRITZ!Box</td>
+                </tr>
+                <tr>
+                    <td><strong>DNS Server</strong></td>
+                    <td><code>192.168.178.1</code></td>
+                    <td>Uses FRITZ!Box for DNS</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="instruction-row">
+            <div class="instruction-number">5</div>
+            <div class="instruction-text">
+                <strong>Click "Apply"</strong> to save all settings.
+            </div>
+        </div>
+
+        <div class="alert alert-danger">
+            <div class="alert-icon">&#x26D4;</div>
+            <div><strong>Critical:</strong> Make sure the IP address (192.168.178.2) is NOT already in use by another device. Check this in FRITZ!Box under Home Network &rsaquo; Network.</div>
+        </div>
+    </div>
+
+    <!-- ============================== -->
+    <!-- STEP 3: Enable Mesh            -->
+    <!-- ============================== -->
+    <div class="step-section" id="step3">
+        <h2><span class="step-number">3</span> Enable Mesh in FRITZ!Box</h2>
+
+        <div class="alert alert-info">
+            <div class="alert-icon">&#x2139;&#xFE0F;</div>
+            <div>FRITZ Mesh ensures all your FRITZ devices work as a unified network. This prevents separate networks and ensures seamless routing. <strong>This step is performed on the FRITZ!Box 6660, not on the Powerline adapter.</strong></div>
+        </div>
+
+        <h3>Access the FRITZ!Box Admin Interface</h3>
+
+        <div class="instruction-row">
+            <div class="instruction-number">1</div>
+            <div class="instruction-text">
+                Open your browser and go to <code>http://fritz.box</code> (or <code>http://192.168.178.1</code>).
+            </div>
+        </div>
+
+        <div class="instruction-row">
+            <div class="instruction-number">2</div>
+            <div class="instruction-text">
+                Log in with your FRITZ!Box admin password.
+            </div>
+        </div>
+
+        <div class="instruction-row">
+            <div class="instruction-number">3</div>
+            <div class="instruction-text">
+                Navigate to:<br>
+                <span class="menu-path">Home Network <span class="separator">&rsaquo;</span> Mesh</span>
+            </div>
+        </div>
+
+        <!-- Screenshot: FRITZ!Box Mesh Overview -->
+        <div class="screenshot">
+            <div class="screenshot-header">
+                <div class="dots">
+                    <div class="dot dot-red"></div>
+                    <div class="dot dot-yellow"></div>
+                    <div class="dot dot-green"></div>
+                </div>
+                <div class="url-bar">http://fritz.box</div>
+            </div>
+            <div class="screenshot-body">
+                <div class="fritz-ui">
+                    <div class="fritz-sidebar">
+                        <div class="fritz-logo">
+                            FRITZ!Box 6660<br>
+                            <span>Cable</span>
+                        </div>
+                        <div class="fritz-menu-item">Overview</div>
+                        <div class="fritz-menu-item">Internet</div>
+                        <div class="fritz-menu-item">Telephony</div>
+                        <div class="fritz-menu-item active">Home Network</div>
+                        <div class="fritz-menu-item sub active">Mesh</div>
+                        <div class="fritz-menu-item sub">Network</div>
+                        <div class="fritz-menu-item">WLAN</div>
+                        <div class="fritz-menu-item">Smart Home</div>
+                        <div class="fritz-menu-item">Diagnostics</div>
+                        <div class="fritz-menu-item">System</div>
+                    </div>
+                    <div class="fritz-content">
+                        <h3>Mesh Overview</h3>
+
+                        <div style="text-align: center; padding: 20px;">
+                            <!-- Mesh Diagram -->
+                            <div style="display: inline-block; padding: 15px 25px; background: linear-gradient(135deg, #ffe8e8, #ffcccc); border: 2px solid var(--fritz-red); border-radius: 10px; margin-bottom: 20px;">
+                                <div style="font-size: 1.5em;">&#x1F4E1;</div>
+                                <div style="font-weight: bold;">FRITZ!Box 6660 Cable</div>
+                                <div style="font-size: 0.8em; color: #666;">Mesh Master</div>
+                            </div>
+
+                            <div style="font-size: 1.5em; margin: 10px 0;">&#x2502;</div>
+                            <div style="font-size: 0.8em; color: #999;">Powerline connection</div>
+                            <div style="font-size: 1.5em; margin: 10px 0;">&#x2502;</div>
+
+                            <div style="display: inline-block; padding: 15px 25px; background: linear-gradient(135deg, #e8f0ff, #cce0ff); border: 2px solid var(--info); border-radius: 10px; position: relative;">
+                                <div style="font-size: 1.5em;">&#x1F50C;</div>
+                                <div style="font-weight: bold;">FRITZ!Powerline</div>
+                                <div style="font-size: 0.8em; color: var(--success); font-weight: bold;">&#x2705; Mesh enabled</div>
+                                <span class="highlight-arrow" style="position: absolute; right: -180px; top: 50%; transform: translateY(-50%);">&#x2190; Mesh icon should show here</span>
+                            </div>
+                        </div>
+
+                        <div class="fritz-form-group" style="border: 2px solid var(--success); background: #e8f5e9;">
+                            <label>Add Device to Mesh Network</label>
+                            <p style="font-size: 0.9em; margin-bottom: 10px;">To add your Powerline adapter to the Mesh network:</p>
+                            <ol style="padding-left: 20px; font-size: 0.9em;">
+                                <li style="margin: 5px 0;">Press the <strong>Connect/WPS button</strong> on the FRITZ!Box for 1 second</li>
+                                <li style="margin: 5px 0;">Within 2 minutes, press the <strong>Connect button</strong> on the Powerline adapter</li>
+                                <li style="margin: 5px 0;">Wait until the Powerline LED stops blinking</li>
+                            </ol>
+                            <button class="fritz-btn" style="margin-top: 15px;">Start Mesh pairing</button>
+                        </div>
+
+                        <div class="alert alert-success" style="font-size: 0.85em;">
+                            <div class="alert-icon">&#x2705;</div>
+                            <div>When Mesh is active, the Powerline adapter shows a <strong>Mesh icon</strong> in the overview. All devices connected to it will be part of the same unified FRITZ network.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h3>Mesh Pairing Instructions</h3>
+
+        <div class="instruction-row">
+            <div class="instruction-number">4</div>
+            <div class="instruction-text">
+                <strong>On the FRITZ!Box 6660:</strong> Press and hold the <strong>"Connect" / "WPS" button</strong> on the front of the router for about <strong>1 second</strong>.
+            </div>
+        </div>
+
+        <div class="instruction-row">
+            <div class="instruction-number">5</div>
+            <div class="instruction-text">
+                <strong>Within 2 minutes:</strong> Press the <strong>"Connect" button</strong> on your FRITZ Powerline adapter.
+            </div>
+        </div>
+
+        <div class="instruction-row">
+            <div class="instruction-number">6</div>
+            <div class="instruction-text">
+                <strong>Wait</strong> until the LEDs on both devices stop blinking. The Powerline adapter is now part of the Mesh network.
+            </div>
+        </div>
+
+        <div class="instruction-row">
+            <div class="instruction-number">7</div>
+            <div class="instruction-text">
+                <strong>Verify</strong> in the FRITZ!Box under <span class="menu-path">Home Network <span class="separator">&rsaquo;</span> Mesh</span> that the Powerline adapter shows with a <strong>Mesh icon</strong>.
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <div class="alert-icon">&#x2705;</div>
+            <div><strong>Benefits of Mesh:</strong> No separate networks, unified routing, seamless handover, and the FRITZ!Box manages all IP assignments centrally.</div>
+        </div>
+    </div>
+
+    <!-- ============================== -->
+    <!-- STEP 4: Static IP for Huawei   -->
+    <!-- ============================== -->
+    <div class="step-section" id="step4">
+        <h2><span class="step-number">4</span> Assign a Static IP to Your Huawei Device</h2>
+
+        <div class="alert alert-info">
+            <div class="alert-icon">&#x2139;&#xFE0F;</div>
+            <div>Giving your Huawei FusionSolar device a fixed (static) IP address prevents IP changes that could cause connection drops. <strong>This is configured on the FRITZ!Box 6660.</strong></div>
+        </div>
+
+        <div class="instruction-row">
+            <div class="instruction-number">1</div>
+            <div class="instruction-text">
+                Open <code>http://fritz.box</code> and log in.
+            </div>
+        </div>
+
+        <div class="instruction-row">
+            <div class="instruction-number">2</div>
+            <div class="instruction-text">
+                Navigate to:<br>
+                <span class="menu-path">Home Network <span class="separator">&rsaquo;</span> Network</span>
+            </div>
+        </div>
+
+        <!-- Screenshot: FRITZ!Box Network Device List -->
+        <div class="screenshot">
+            <div class="screenshot-header">
+                <div class="dots">
+                    <div class="dot dot-red"></div>
+                    <div class="dot dot-yellow"></div>
+                    <div class="dot dot-green"></div>
+                </div>
+                <div class="url-bar">http://fritz.box</div>
+            </div>
+            <div class="screenshot-body">
+                <div class="fritz-ui">
+                    <div class="fritz-sidebar">
+                        <div class="fritz-logo">
+                            FRITZ!Box 6660<br>
+                            <span>Cable</span>
+                        </div>
+                        <div class="fritz-menu-item">Overview</div>
+                        <div class="fritz-menu-item">Internet</div>
+                        <div class="fritz-menu-item">Telephony</div>
+                        <div class="fritz-menu-item active">Home Network</div>
+                        <div class="fritz-menu-item sub">Mesh</div>
+                        <div class="fritz-menu-item sub active">Network</div>
+                        <div class="fritz-menu-item">WLAN</div>
+                        <div class="fritz-menu-item">Smart Home</div>
+                        <div class="fritz-menu-item">Diagnostics</div>
+                        <div class="fritz-menu-item">System</div>
+                    </div>
+                    <div class="fritz-content">
+                        <h3>Network Connections</h3>
+
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.88em; margin-top: 10px;">
+                            <thead>
+                                <tr style="background: #f0f0f0;">
+                                    <th style="padding: 8px 10px; text-align: left;">Name</th>
+                                    <th style="padding: 8px 10px; text-align: left;">IP Address</th>
+                                    <th style="padding: 8px 10px; text-align: left;">Connection</th>
+                                    <th style="padding: 8px 10px; text-align: center;">Edit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="border-bottom: 1px solid #eee;">
+                                    <td style="padding: 8px 10px;">PC-Desktop</td>
+                                    <td style="padding: 8px 10px; font-family: monospace;">192.168.178.20</td>
+                                    <td style="padding: 8px 10px;">LAN</td>
+                                    <td style="padding: 8px 10px; text-align: center;">&#x270F;&#xFE0F;</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #eee;">
+                                    <td style="padding: 8px 10px;">Smartphone</td>
+                                    <td style="padding: 8px 10px; font-family: monospace;">192.168.178.21</td>
+                                    <td style="padding: 8px 10px;">WLAN</td>
+                                    <td style="padding: 8px 10px; text-align: center;">&#x270F;&#xFE0F;</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #eee; background: #e8f5e9; border: 2px solid var(--success);">
+                                    <td style="padding: 8px 10px; font-weight: bold;">Huawei-SUN2000 <span class="highlight-arrow">&#x2190; CLICK THIS DEVICE</span></td>
+                                    <td style="padding: 8px 10px; font-family: monospace;">192.168.178.50</td>
+                                    <td style="padding: 8px 10px;">LAN (Powerline)</td>
+                                    <td style="padding: 8px 10px; text-align: center;">&#x270F;&#xFE0F;</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #eee;">
+                                    <td style="padding: 8px 10px;">FRITZ!Powerline</td>
+                                    <td style="padding: 8px 10px; font-family: monospace;">192.168.178.2</td>
+                                    <td style="padding: 8px 10px;">Powerline</td>
+                                    <td style="padding: 8px 10px; text-align: center;">&#x270F;&#xFE0F;</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div style="margin-top: 20px; padding-top: 15px; border-top: 2px solid #eee;">
+                            <h3 style="border: none; padding: 0; margin-top: 0;">Device Details: Huawei-SUN2000</h3>
+
+                            <div class="fritz-form-group" style="border: 2px solid var(--success); background: #e8f5e9;">
+                                <label>IP Address Settings</label>
+
+                                <div class="fritz-checkbox" style="background: #d4edda; padding: 10px 12px; border-radius: 4px; border: 2px solid var(--success);">
+                                    <input type="checkbox" id="static-ip" checked>
+                                    <label for="static-ip" style="font-weight: bold;">Always assign the same IPv4 address to this device</label>
+                                    <span class="highlight-arrow">&#x2190; CHECK THIS!</span>
+                                </div>
+
+                                <div class="fritz-input" style="margin-top: 10px;">
+                                    <label>IPv4 Address:</label>
+                                    <input type="text" value="192.168.178.50" readonly style="border-color: var(--success); background: #f0fff0;">
+                                </div>
+                            </div>
+
+                            <button class="fritz-btn">OK</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="instruction-row">
+            <div class="instruction-number">3</div>
+            <div class="instruction-text">
+                <strong>Find your Huawei device</strong> in the list (it may appear as "Huawei-SUN2000" or similar).
+            </div>
+        </div>
+
+        <div class="instruction-row">
+            <div class="instruction-number">4</div>
+            <div class="instruction-text">
+                <strong>Click the edit icon</strong> (pencil &#x270F;&#xFE0F;) next to the Huawei device.
+            </div>
+        </div>
+
+        <div class="instruction-row">
+            <div class="instruction-number">5</div>
+            <div class="instruction-text">
+                <strong>Enable the checkbox:</strong> "Always assign the same IPv4 address to this device"<br>
+                (German: "Diesem Netzwerkger&auml;t immer die gleiche IPv4-Adresse zuweisen")
+            </div>
+        </div>
+
+        <div class="instruction-row">
+            <div class="instruction-number">6</div>
+            <div class="instruction-text">
+                <strong>Click "OK"</strong> to save.
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <div class="alert-icon">&#x2705;</div>
+            <div>Your Huawei device will now always receive the same IP address from the FRITZ!Box. This prevents IP changes that could disrupt FusionSolar.</div>
+        </div>
+    </div>
+
+    <!-- ============================== -->
+    <!-- STEP 5: Verification           -->
+    <!-- ============================== -->
+    <div class="step-section" id="step5">
+        <h2><span class="step-number">5</span> Verification &amp; Quick Test</h2>
+
+        <div class="alert alert-info">
+            <div class="alert-icon">&#x2139;&#xFE0F;</div>
+            <div>After completing all steps, verify that everything is working correctly. This takes only 2 minutes.</div>
+        </div>
+
+        <h3>Quick Verification Checklist</h3>
+
+        <div class="checklist">
+            <h4>Check these items after the configuration:</h4>
+
+            <div class="checklist-item">
+                <span class="check-icon">&#x2705;</span>
+                <span><strong>Huawei device IP:</strong> Must be <code>192.168.178.x</code> (same range as FRITZ!Box)</span>
+            </div>
+
+            <div class="checklist-item">
+                <span class="check-icon">&#x2705;</span>
+                <span><strong>FRITZ!Box IP (Gateway):</strong> Must be <code>192.168.178.1</code></span>
+            </div>
+
+            <div class="checklist-item">
+                <span class="check-icon">&#x2705;</span>
+                <span><strong>Powerline adapter IP:</strong> Must be <code>192.168.178.2</code> (same range)</span>
+            </div>
+
+            <div class="checklist-item">
+                <span class="check-icon">&#x2705;</span>
+                <span><strong>Powerline DHCP:</strong> Must be <strong>OFF</strong></span>
+            </div>
+
+            <div class="checklist-item">
+                <span class="check-icon">&#x2705;</span>
+                <span><strong>Powerline mode:</strong> Must be <strong>"LAN Bridge"</strong></span>
+            </div>
+
+            <div class="checklist-item">
+                <span class="check-icon">&#x2705;</span>
+                <span><strong>Mesh:</strong> Powerline should show Mesh icon in FRITZ!Box overview</span>
+            </div>
+        </div>
+
+        <h3>How to Verify IPs</h3>
+
+        <!-- Screenshot: FRITZ!Box Network Overview Check -->
+        <div class="screenshot">
+            <div class="screenshot-header">
+                <div class="dots">
+                    <div class="dot dot-red"></div>
+                    <div class="dot dot-yellow"></div>
+                    <div class="dot dot-green"></div>
+                </div>
+                <div class="url-bar">http://fritz.box</div>
+            </div>
+            <div class="screenshot-body">
+                <div class="fritz-ui" style="min-height: 250px;">
+                    <div class="fritz-sidebar">
+                        <div class="fritz-logo">
+                            FRITZ!Box 6660<br>
+                            <span>Cable</span>
+                        </div>
+                        <div class="fritz-menu-item active">Home Network</div>
+                        <div class="fritz-menu-item sub active">Network</div>
+                    </div>
+                    <div class="fritz-content">
+                        <h3>Network Connections &mdash; Verification</h3>
+
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.88em; margin-top: 10px;">
+                            <thead>
+                                <tr style="background: #d4edda;">
+                                    <th style="padding: 8px 10px; text-align: left;">Device</th>
+                                    <th style="padding: 8px 10px; text-align: left;">IP Address</th>
+                                    <th style="padding: 8px 10px; text-align: left;">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="border-bottom: 1px solid #eee;">
+                                    <td style="padding: 8px 10px;">FRITZ!Box 6660</td>
+                                    <td style="padding: 8px 10px; font-family: monospace; color: var(--success); font-weight: bold;">192.168.178.1</td>
+                                    <td style="padding: 8px 10px; color: var(--success);">&#x2705; Router (Master)</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #eee;">
+                                    <td style="padding: 8px 10px;">FRITZ!Powerline</td>
+                                    <td style="padding: 8px 10px; font-family: monospace; color: var(--success); font-weight: bold;">192.168.178.2</td>
+                                    <td style="padding: 8px 10px; color: var(--success);">&#x2705; LAN Bridge + Mesh</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #eee; background: #e8f5e9;">
+                                    <td style="padding: 8px 10px; font-weight: bold;">Huawei-SUN2000</td>
+                                    <td style="padding: 8px 10px; font-family: monospace; color: var(--success); font-weight: bold;">192.168.178.50</td>
+                                    <td style="padding: 8px 10px; color: var(--success);">&#x2705; Static IP assigned</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="alert alert-success" style="margin-top: 15px; font-size: 0.85em;">
+                            <div class="alert-icon">&#x1F389;</div>
+                            <div><strong>All devices are on the same network (192.168.178.x)!</strong> Your setup is correct. FusionSolar should now have a stable connection.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h3>Test the Connection</h3>
+
+        <div class="instruction-row">
+            <div class="instruction-number">1</div>
+            <div class="instruction-text">
+                <strong>Open FusionSolar app</strong> on your phone or computer.
+            </div>
+        </div>
+
+        <div class="instruction-row">
+            <div class="instruction-number">2</div>
+            <div class="instruction-text">
+                <strong>Check if the inverter shows as "Online"</strong> and data is updating in real-time.
+            </div>
+        </div>
+
+        <div class="instruction-row">
+            <div class="instruction-number">3</div>
+            <div class="instruction-text">
+                <strong>Wait 10-15 minutes</strong> to confirm the connection remains stable without dropouts.
+            </div>
+        </div>
+
+        <h3>Result Assessment</h3>
+
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>Check</th>
+                    <th>Expected Result</th>
+                    <th>If NOT Correct</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Huawei IP</td>
+                    <td class="good">192.168.178.x</td>
+                    <td class="bad">Powerline still in wrong mode</td>
+                </tr>
+                <tr>
+                    <td>Router IP</td>
+                    <td class="good">192.168.178.1</td>
+                    <td class="bad">Check FRITZ!Box settings</td>
+                </tr>
+                <tr>
+                    <td>Powerline Mode</td>
+                    <td class="good">LAN Bridge</td>
+                    <td class="bad">Repeat Step 1</td>
+                </tr>
+                <tr>
+                    <td>DHCP on Powerline</td>
+                    <td class="good">Disabled</td>
+                    <td class="bad">Repeat Step 2</td>
+                </tr>
+                <tr>
+                    <td>FusionSolar Status</td>
+                    <td class="good">Online / Connected</td>
+                    <td class="bad">Restart Huawei device, wait 5 min</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ============================== -->
+    <!-- Troubleshooting                -->
+    <!-- ============================== -->
+    <div class="step-section" id="troubleshooting">
+        <h2><span class="step-number">?</span> Troubleshooting</h2>
+
+        <h3>Cannot access <code>fritz.powerline</code></h3>
+        <div class="alert alert-info">
+            <div class="alert-icon">&#x1F527;</div>
+            <div>
+                <ul style="margin: 0; padding-left: 18px;">
+                    <li>Make sure you are connected directly to the Powerline adapter (via LAN cable)</li>
+                    <li>Try the IP address directly: <code>http://169.254.1.1</code></li>
+                    <li>Reset the Powerline adapter by holding the reset button for 15 seconds</li>
+                    <li>After reset, the default address should work again</li>
+                </ul>
+            </div>
+        </div>
+
+        <h3>Huawei device still shows wrong IP range</h3>
+        <div class="alert alert-warning">
+            <div class="alert-icon">&#x26A0;&#xFE0F;</div>
+            <div>
+                <ul style="margin: 0; padding-left: 18px;">
+                    <li><strong>Power-cycle the Huawei device</strong> &mdash; unplug it for 30 seconds, then plug it back in</li>
+                    <li>Check that the Powerline DHCP server is truly disabled</li>
+                    <li>Verify the Powerline is in LAN Bridge mode (not Router/AP mode)</li>
+                    <li>Make sure the Powerline adapter's IP is in the 192.168.178.x range</li>
+                </ul>
+            </div>
+        </div>
+
+        <h3>Mesh pairing fails</h3>
+        <div class="alert alert-info">
+            <div class="alert-icon">&#x1F527;</div>
+            <div>
+                <ul style="margin: 0; padding-left: 18px;">
+                    <li>Make sure both devices are powered on and have a stable Powerline connection</li>
+                    <li>Press buttons within the 2-minute window</li>
+                    <li>Update the firmware on both the FRITZ!Box and Powerline adapter</li>
+                    <li>Try the pairing process again (you can retry as many times as needed)</li>
+                </ul>
+            </div>
+        </div>
+
+        <h3>FusionSolar still drops after all changes</h3>
+        <div class="alert alert-danger">
+            <div class="alert-icon">&#x1F6A8;</div>
+            <div>
+                <ul style="margin: 0; padding-left: 18px;">
+                    <li>Check if the Powerline connection itself is unstable (both adapters should show green LEDs)</li>
+                    <li>Try plugging the Powerline adapters directly into wall sockets (not power strips)</li>
+                    <li>Check for firmware updates on the Huawei inverter</li>
+                    <li>In FRITZ!Box, go to <span class="menu-path">Diagnostics <span class="separator">&rsaquo;</span> Security</span> and check if any firewall rules are blocking the Huawei device</li>
+                    <li>Consider using a direct LAN cable from the FRITZ!Box to the Huawei device (bypassing Powerline) as a test</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="solution-box" style="margin-top: 40px;">
+        <h2>Summary of All Changes</h2>
+        <table class="comparison-table" style="margin-top: 10px;">
+            <thead>
+                <tr>
+                    <th>Setting</th>
+                    <th>Where</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Operating Mode</strong></td>
+                    <td>Powerline Adapter</td>
+                    <td class="good">LAN Bridge</td>
+                </tr>
+                <tr>
+                    <td><strong>DHCP Server</strong></td>
+                    <td>Powerline Adapter</td>
+                    <td class="good">Disabled (OFF)</td>
+                </tr>
+                <tr>
+                    <td><strong>Powerline IP</strong></td>
+                    <td>Powerline Adapter</td>
+                    <td class="good">192.168.178.2</td>
+                </tr>
+                <tr>
+                    <td><strong>Powerline Gateway</strong></td>
+                    <td>Powerline Adapter</td>
+                    <td class="good">192.168.178.1</td>
+                </tr>
+                <tr>
+                    <td><strong>Mesh</strong></td>
+                    <td>FRITZ!Box 6660</td>
+                    <td class="good">Enabled (paired)</td>
+                </tr>
+                <tr>
+                    <td><strong>Huawei Static IP</strong></td>
+                    <td>FRITZ!Box 6660</td>
+                    <td class="good">Enabled (e.g. 192.168.178.50)</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<a href="#top" class="back-to-top" title="Back to top">&#x2191;</a>
+
+<div class="footer">
+    <p><strong>FRITZ!Box 6660 Cable + Powerline LAN Bridge Setup Guide</strong></p>
+    <p>For Huawei FusionSolar stable connectivity</p>
+    <p style="margin-top: 10px; font-size: 0.85em; opacity: 0.6;">FRITZ!Box and FRITZ!Powerline are trademarks of AVM GmbH. This guide is unofficial and for informational purposes only.</p>
+</div>
+
+</body>
+</html>
