@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Solar PV">
+<meta name="theme-color" content="#050508">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<title>Solar PV Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{fontFamily:{mono:['JetBrains Mono','ui-monospace','monospace']}}}}</script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap');
+  body {
+    font-family:'Inter',sans-serif;background:#050508;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;overscroll-behavior-y:contain;
+  }
+  .glass{background:rgba(255,255,255,0.03);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.06);transition:background .3s,border-color .3s,transform .3s}
+  .glass:hover{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.1)}
+  .glass-click{cursor:pointer}.glass-click:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,0.3)}
+  @keyframes glow-pulse{0%,100%{opacity:.6}50%{opacity:1}}
+  @keyframes neon{0%,100%{text-shadow:0 0 10px currentColor,0 0 40px currentColor}50%{text-shadow:0 0 5px currentColor,0 0 20px currentColor}}
+  @keyframes fade-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @keyframes float-particle{0%{transform:translateY(0);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateY(-100vh);opacity:0}}
+  @keyframes hero-glow{0%,100%{opacity:.3}50%{opacity:.6}}
+  .neon-text{animation:neon 4s ease-in-out infinite}
+  .anim{animation:fade-in .5s ease-out both}
+  .d1{animation-delay:.06s}.d2{animation-delay:.12s}.d3{animation-delay:.18s}.d4{animation-delay:.24s}.d5{animation-delay:.3s}.d6{animation-delay:.36s}
+  .gauge-ring{transition:stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1);transform:rotate(-90deg);transform-origin:center}
+  .tab-btn{padding:4px 12px;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.25);border:1px solid transparent;border-radius:6px;cursor:pointer;transition:all .3s;background:0 0}
+  .tab-btn:hover{color:rgba(255,255,255,.5)}
+  .tab-btn.active{color:rgba(245,158,11,.8);border-color:rgba(245,158,11,.2);background:rgba(245,158,11,.05)}
+  .expand-wrap{display:grid;grid-template-rows:0fr;transition:grid-template-rows .4s cubic-bezier(.4,0,.2,1)}
+  .expand-wrap.open{grid-template-rows:1fr}
+  .expand-inner{overflow:hidden}
+  .expand-panel{opacity:0;transform:translateY(-6px);transition:opacity .3s ease,transform .3s ease;padding:0 24px}
+  .expand-wrap.open .expand-panel{opacity:1;transform:translateY(0);padding:16px 24px}
+  .tip{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:rgba(20,20,30,.95);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:6px 10px;font-size:10px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .2s;backdrop-filter:blur(10px)}
+  .group:hover .tip{opacity:1}
+  ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:0 0}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:2px}
+  @media(max-width:640px){.hero-num{font-size:3.5rem!important}.metric-strip{grid-template-columns:repeat(2,1fr)!important}.flow-svg{display:none}.flow-mobile{display:flex!important}}
+  .flow-mobile{display:none}
+  /* Smooth number animation */
+  .num{transition:all .6s cubic-bezier(.4,0,.2,1)}
+  /* Particle field */
+  .particle{position:fixed;width:1px;height:1px;background:rgba(245,158,11,.3);border-radius:50%;pointer-events:none;animation:float-particle linear infinite}
+</style>
+</head>
+<body class="text-white min-h-screen overflow-x-hidden" id="body">
+
+<!-- Particle field background -->
+<div id="particles" class="fixed inset-0 pointer-events-none z-0"></div>
+
+<div class="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+
+  <!-- Header — minimal -->
+  <header class="flex items-center justify-between mb-6 anim">
+    <div class="flex items-center gap-3">
+      <div class="text-2xl neon-text text-amber-400">&#9737;</div>
+      <div>
+        <h1 class="text-xs font-bold uppercase tracking-[.3em] text-white/80">Solar</h1>
+        <p class="text-[9px] text-white/20 tracking-widest">9.8 KWP SYSTEM</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-4">
+      <div class="flex items-center gap-2">
+        <div class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-lg shadow-emerald-400/50" style="animation:glow-pulse 2s infinite"></div>
+        <span class="text-[9px] uppercase tracking-widest text-emerald-400/60">Online</span>
+      </div>
+      <span class="text-[9px] text-white/20 tabular-nums tracking-wider font-mono hidden sm:block" id="clock"></span>
+    </div>
+  </header>
+
+  <!-- Hero — big glowing number -->
+  <div class="text-center mb-6 anim d1 relative">
+    <!-- Radial glow behind number -->
+    <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+      <div class="w-64 h-64 rounded-full" style="background:radial-gradient(circle,rgba(245,158,11,.12) 0%,transparent 70%);animation:hero-glow 4s ease-in-out infinite"></div>
+    </div>
+    <p class="text-[9px] uppercase tracking-[.4em] text-white/20 mb-2 relative">Current Output</p>
+    <div class="text-7xl sm:text-8xl lg:text-[10rem] font-extralight tabular-nums text-amber-400 neon-text hero-num font-mono relative leading-none" id="hero">4.32</div>
+    <p class="text-xs text-white/15 mt-2 tracking-[.3em] relative">KILOWATTS</p>
+    <div class="max-w-xs mx-auto mt-3 relative">
+      <div class="h-px rounded-full bg-white/5 overflow-hidden"><div class="h-full rounded-full bg-gradient-to-r from-amber-500/40 to-amber-400/10 transition-all duration-1000" id="cap-bar" style="width:44%"></div></div>
+      <div class="flex justify-between mt-1 text-[7px] text-white/10 font-mono"><span>0</span><span id="cap-pct">44%</span><span>9.8 kWp</span></div>
+    </div>
+  </div>
+
+  <!-- Energy Flow -->
+  <div class="mb-6 anim d2 relative">
+    <svg viewBox="0 0 900 340" class="w-full flow-svg" style="max-height:380px">
+      <defs>
+        <filter id="glowA" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        <filter id="glowB" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        <filter id="glowG" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        <filter id="iconBlend" x="-10%" y="-10%" width="120%" height="120%"><feColorMatrix type="matrix" values="1.3 0 0 0 0  0 1.3 0 0 0  0 0 1.3 0 0  1 1 1 0 -0.3"/><feGaussianBlur stdDeviation="0.5"/></filter>
+        <radialGradient id="hA" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#f59e0b" stop-opacity=".15"/><stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/></radialGradient>
+        <radialGradient id="hC" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#22d3ee" stop-opacity=".12"/><stop offset="100%" stop-color="#22d3ee" stop-opacity="0"/></radialGradient>
+        <radialGradient id="hB" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#3b82f6" stop-opacity=".12"/><stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/></radialGradient>
+        <radialGradient id="hG" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#34d399" stop-opacity=".12"/><stop offset="100%" stop-color="#34d399" stop-opacity="0"/></radialGradient>
+        <linearGradient id="lAH"><stop offset="0%" stop-color="#f59e0b" stop-opacity=".4"/><stop offset="50%" stop-color="#f59e0b" stop-opacity=".08"/><stop offset="100%" stop-color="#22d3ee" stop-opacity=".4"/></linearGradient>
+        <linearGradient id="lHG"><stop offset="0%" stop-color="#22d3ee" stop-opacity=".4"/><stop offset="50%" stop-color="#3b82f6" stop-opacity=".08"/><stop offset="100%" stop-color="#3b82f6" stop-opacity=".4"/></linearGradient>
+        <linearGradient id="lHB" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#22d3ee" stop-opacity=".3"/><stop offset="100%" stop-color="#34d399" stop-opacity=".4"/></linearGradient>
+      </defs>
+      <!-- Halos -->
+      <circle cx="120" cy="110" r="100" fill="url(#hA)"/>
+      <circle cx="450" cy="110" r="100" fill="url(#hC)"/>
+      <circle cx="780" cy="110" r="100" fill="url(#hB)"/>
+      <circle cx="450" cy="270" r="100" fill="url(#hG)"/>
+      <!-- Lines -->
+      <line x1="190" y1="110" x2="380" y2="110" stroke="url(#lAH)" stroke-width="1.5"/>
+      <line x1="520" y1="110" x2="710" y2="110" stroke="url(#lHG)" stroke-width="1.5"/>
+      <line x1="450" y1="175" x2="450" y2="220" stroke="url(#lHB)" stroke-width="1.5"/>
+      <!-- Icons -->
+      <image href="icons/solar.png" x="45" y="35" width="150" height="150" filter="url(#iconBlend)" style="mix-blend-mode:screen"/>
+      <image href="icons/home.png" x="375" y="35" width="150" height="150" filter="url(#iconBlend)" style="mix-blend-mode:screen"/>
+      <image href="icons/grid.png" x="705" y="35" width="150" height="150" filter="url(#iconBlend)" style="mix-blend-mode:screen"/>
+      <image href="icons/battery.png" x="375" y="195" width="150" height="150" filter="url(#iconBlend)" style="mix-blend-mode:screen"/>
+      <!-- Dots: Solar→Home -->
+      <circle r="4" fill="#f59e0b" filter="url(#glowA)"><animateMotion dur="2.5s" repeatCount="indefinite" path="M120,110 L450,110"/><animate attributeName="opacity" dur="2.5s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;.12;.2;.8;.88;1"/></circle>
+      <circle r="3" fill="#f59e0b" filter="url(#glowA)"><animateMotion dur="2.5s" repeatCount="indefinite" path="M120,110 L450,110" begin=".7s"/><animate attributeName="opacity" dur="2.5s" repeatCount="indefinite" values="0;0;.6;.6;0;0" keyTimes="0;.12;.2;.8;.88;1" begin=".7s"/></circle>
+      <circle r="2" fill="#f59e0b"><animateMotion dur="2.5s" repeatCount="indefinite" path="M120,110 L450,110" begin="1.4s"/><animate attributeName="opacity" dur="2.5s" repeatCount="indefinite" values="0;0;.3;.3;0;0" keyTimes="0;.12;.2;.8;.88;1" begin="1.4s"/></circle>
+      <!-- Dots: Home→Grid -->
+      <circle r="4" fill="#3b82f6" filter="url(#glowB)"><animateMotion dur="2.8s" repeatCount="indefinite" path="M450,110 L780,110"/><animate attributeName="opacity" dur="2.8s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;.12;.2;.8;.88;1"/></circle>
+      <circle r="3" fill="#3b82f6" filter="url(#glowB)"><animateMotion dur="2.8s" repeatCount="indefinite" path="M450,110 L780,110" begin=".8s"/><animate attributeName="opacity" dur="2.8s" repeatCount="indefinite" values="0;0;.5;.5;0;0" keyTimes="0;.12;.2;.8;.88;1" begin=".8s"/></circle>
+      <!-- Dots: Home→Battery -->
+      <circle r="3.5" fill="#34d399" filter="url(#glowG)"><animateMotion dur="1.5s" repeatCount="indefinite" path="M450,175 L450,265"/><animate attributeName="opacity" dur="1.5s" repeatCount="indefinite" values="0;0;.9;.9;0;0" keyTimes="0;.12;.22;.78;.88;1"/></circle>
+      <circle r="2" fill="#34d399"><animateMotion dur="1.5s" repeatCount="indefinite" path="M450,175 L450,265" begin=".5s"/><animate attributeName="opacity" dur="1.5s" repeatCount="indefinite" values="0;0;.4;.4;0;0" keyTimes="0;.12;.22;.78;.88;1" begin=".5s"/></circle>
+      <!-- Power labels -->
+      <text x="285" y="100" text-anchor="middle" fill="rgba(255,255,255,.5)" font-size="14" font-family="JetBrains Mono,monospace" id="fl1">1.87 kW</text>
+      <text x="615" y="100" text-anchor="middle" fill="rgba(255,255,255,.5)" font-size="14" font-family="JetBrains Mono,monospace" id="fl2">1.45 kW</text>
+      <text x="485" y="200" text-anchor="start" fill="rgba(52,211,153,.6)" font-size="12" font-family="JetBrains Mono,monospace" id="fl3">+1.0 kW</text>
+    </svg>
+    <!-- Mobile flow -->
+    <div class="flow-mobile flex-col items-center gap-5 py-4">
+      <div class="flex items-center justify-around w-full">
+        <div class="text-center"><img src="icons/solar.png" class="w-16 h-16 mx-auto" style="mix-blend-mode:screen"><div class="text-sm font-mono text-amber-400 mt-1" id="fm-solar">4.32 kW</div></div>
+        <div class="text-amber-400/30">›››</div>
+        <div class="text-center"><img src="icons/home.png" class="w-16 h-16 mx-auto" style="mix-blend-mode:screen"><div class="text-sm font-mono text-cyan-400 mt-1" id="fm-home">1.87 kW</div></div>
+        <div class="text-blue-400/30">›››</div>
+        <div class="text-center"><img src="icons/grid.png" class="w-16 h-16 mx-auto" style="mix-blend-mode:screen"><div class="text-sm font-mono text-blue-400 mt-1" id="fm-grid">1.45 kW</div></div>
+      </div>
+      <div class="text-center"><img src="icons/battery.png" class="w-14 h-14 mx-auto" style="mix-blend-mode:screen"><div class="text-sm font-mono text-emerald-400 mt-1" id="fm-batt">+1.0 kW</div></div>
+    </div>
+  </div>
+
+  <!-- 4-column metrics aligned to flow -->
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6 metric-strip anim d3">
+    <div class="glass rounded-2xl p-4 text-center glass-click" onclick="togglePanel('yield-panel')">
+      <div class="text-[8px] uppercase tracking-widest text-amber-400/40 mb-1">Production</div>
+      <div class="text-2xl font-light text-amber-400 font-mono num" id="m-prod">4.32</div>
+      <div class="text-[9px] text-white/15">kW</div>
+    </div>
+    <div class="glass rounded-2xl p-4 text-center glass-click" onclick="togglePanel('cons-panel')">
+      <div class="text-[8px] uppercase tracking-widest text-cyan-400/40 mb-1">Consumption</div>
+      <div class="text-2xl font-light text-cyan-400 font-mono num" id="m-cons">1.87</div>
+      <div class="text-[9px] text-white/15">kW</div>
+    </div>
+    <div class="glass rounded-2xl p-4 text-center glass-click" onclick="togglePanel('batt-panel')">
+      <div class="text-[8px] uppercase tracking-widest text-emerald-400/40 mb-1">Battery</div>
+      <div class="text-2xl font-light text-emerald-400 font-mono num" id="m-batt">72%</div>
+      <div class="text-[9px] text-white/15" id="m-batt-sub">+1.0 kW</div>
+    </div>
+    <div class="glass rounded-2xl p-4 text-center glass-click" onclick="togglePanel('feed-panel')">
+      <div class="text-[8px] uppercase tracking-widest text-blue-400/40 mb-1">Feed-in</div>
+      <div class="text-2xl font-light text-blue-400 font-mono num" id="m-feed">1.45</div>
+      <div class="text-[9px] text-white/15">kW</div>
+    </div>
+  </div>
+
+  <!-- Expand panels -->
+  <div id="yield-panel" class="expand-wrap mb-3"><div class="expand-inner"><div class="expand-panel glass rounded-2xl">
+    <div class="grid grid-cols-4 gap-4 text-center text-[10px]">
+      <div><div class="text-lg font-light text-amber-400 font-mono">28.4</div><div class="text-white/20">Today kWh</div></div>
+      <div><div class="text-lg font-light text-amber-400/70 font-mono">198</div><div class="text-white/20">Week</div></div>
+      <div><div class="text-lg font-light text-amber-400/50 font-mono">842</div><div class="text-white/20">Month</div></div>
+      <div><div class="text-lg font-light text-amber-400/40 font-mono">4,280</div><div class="text-white/20">Year</div></div>
+    </div>
+  </div></div></div>
+  <div id="cons-panel" class="expand-wrap mb-3"><div class="expand-inner"><div class="expand-panel glass rounded-2xl">
+    <div class="grid grid-cols-3 gap-4 text-center text-[10px]">
+      <div><div class="text-lg font-light text-cyan-400 font-mono">1.12</div><div class="text-white/20">From Solar kW</div></div>
+      <div><div class="text-lg font-light text-blue-400 font-mono">0.45</div><div class="text-white/20">From Grid kW</div></div>
+      <div><div class="text-lg font-light text-emerald-400 font-mono">0.30</div><div class="text-white/20">From Battery kW</div></div>
+    </div>
+  </div></div></div>
+  <div id="batt-panel" class="expand-wrap mb-3"><div class="expand-inner"><div class="expand-panel glass rounded-2xl">
+    <div class="flex items-center gap-6">
+      <div class="relative w-20 h-20 flex-shrink-0"><svg viewBox="0 0 80 80" class="w-full h-full"><circle cx="40" cy="40" r="32" fill="none" stroke="rgba(255,255,255,.04)" stroke-width="5"/><circle cx="40" cy="40" r="32" fill="none" stroke="url(#battGrad)" stroke-width="5" stroke-linecap="round" class="gauge-ring" id="batt-ring" stroke-dasharray="201.06" stroke-dashoffset="56.3"/><defs><linearGradient id="battGrad"><stop offset="0%" stop-color="#34d399"/><stop offset="100%" stop-color="#6ee7b7"/></linearGradient></defs></svg><div class="absolute inset-0 flex items-center justify-center text-sm font-mono text-emerald-400" id="ring-pct">72%</div></div>
+      <div class="grid grid-cols-2 gap-x-6 gap-y-2 text-[10px] flex-1">
+        <div class="text-white/20">Capacity <span class="text-white/40 font-mono">10.0 kWh</span></div>
+        <div class="text-white/20">Status <span class="text-emerald-400/60">Charging</span></div>
+        <div class="text-white/20">Charged <span class="text-white/40 font-mono">6.2 kWh</span></div>
+        <div class="text-white/20">Discharged <span class="text-white/40 font-mono">3.8 kWh</span></div>
+        <div class="text-white/20">Cycles <span class="text-white/40 font-mono">847</span></div>
+        <div class="text-white/20">Health <span class="text-emerald-400/60">96%</span></div>
+      </div>
+    </div>
+  </div></div></div>
+  <div id="feed-panel" class="expand-wrap mb-3"><div class="expand-inner"><div class="expand-panel glass rounded-2xl">
+    <div class="grid grid-cols-2 gap-4 text-[10px]">
+      <div><span class="text-white/25">Exported today</span><span class="text-blue-400/70 font-mono ml-2">8.5 kWh</span></div>
+      <div><span class="text-white/25">Feed-in tariff</span><span class="text-blue-400/70 font-mono ml-2">€ 0.082/kWh</span></div>
+    </div>
+  </div></div></div>
+
+  <!-- Chart + Gauge row -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4 anim d4">
+    <!-- Area Chart -->
+    <div class="lg:col-span-2 glass rounded-2xl p-5 relative overflow-hidden">
+      <div class="flex items-center justify-between mb-4">
+        <div class="text-[8px] uppercase tracking-widest text-white/20">Production</div>
+        <div class="flex gap-1"><button class="tab-btn active" onclick="switchChart('today',this)">Today</button><button class="tab-btn" onclick="switchChart('week',this)">Week</button><button class="tab-btn" onclick="switchChart('month',this)">Month</button></div>
+      </div>
+      <div class="relative" style="height:180px">
+        <canvas id="chart" class="w-full h-full"></canvas>
+      </div>
+    </div>
+    <!-- Self-sufficiency gauge -->
+    <div class="glass rounded-2xl p-5 flex flex-col items-center justify-center">
+      <div class="text-[8px] uppercase tracking-widest text-white/20 mb-3 self-start">Self-sufficiency</div>
+      <div class="relative w-36 h-36">
+        <svg viewBox="0 0 100 100" class="w-full h-full">
+          <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,.03)" stroke-width="5"/>
+          <circle cx="50" cy="50" r="42" fill="none" stroke="url(#suffG)" stroke-width="5" stroke-linecap="round" class="gauge-ring" id="suff-ring" stroke-dasharray="263.89" stroke-dashoffset="50.14"/>
+          <circle cx="50" cy="50" r="34" fill="none" stroke="rgba(255,255,255,.02)" stroke-width="4"/>
+          <circle cx="50" cy="50" r="34" fill="none" stroke="url(#battG2)" stroke-width="4" stroke-linecap="round" class="gauge-ring" id="batt-ring2" stroke-dasharray="213.63" stroke-dashoffset="59.82"/>
+          <defs>
+            <linearGradient id="suffG"><stop offset="0%" stop-color="#a78bfa"/><stop offset="100%" stop-color="#c4b5fd"/></linearGradient>
+            <linearGradient id="battG2"><stop offset="0%" stop-color="#34d399"/><stop offset="100%" stop-color="#6ee7b7"/></linearGradient>
+          </defs>
+        </svg>
+        <div class="absolute inset-0 flex flex-col items-center justify-center">
+          <span class="text-3xl font-light text-purple-400 font-mono">81</span>
+          <span class="text-[7px] text-white/20 tracking-wider">PERCENT</span>
+        </div>
+      </div>
+      <div class="flex gap-4 mt-3 text-[9px]">
+        <div class="flex items-center gap-1.5"><div class="w-2 h-0.5 rounded bg-purple-400"></div><span class="text-white/25">Sufficiency 81%</span></div>
+        <div class="flex items-center gap-1.5"><div class="w-2 h-0.5 rounded bg-emerald-400"></div><span class="text-white/25">Battery 72%</span></div>
+      </div>
+      <div class="w-full mt-4 pt-3 border-t border-white/[.04] space-y-1.5">
+        <div class="flex justify-between text-[10px]"><span class="text-white/20">CO₂ saved</span><span class="text-emerald-400/60 font-mono">12.2 kg</span></div>
+        <div class="flex justify-between text-[10px]"><span class="text-white/20">Revenue today</span><span class="text-purple-400/60 font-mono">€ 8.52</span></div>
+        <div class="flex justify-between text-[10px]"><span class="text-white/20">Revenue month</span><span class="text-purple-400/40 font-mono">€ 102.60</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom: Inverters + Alerts + Summary -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 anim d5">
+    <!-- Inverters -->
+    <div class="glass rounded-2xl p-5">
+      <div class="text-[8px] uppercase tracking-widest text-white/20 mb-3">Inverters</div>
+      <div class="space-y-3">
+        <div class="glass rounded-xl p-3 glass-click" onclick="togglePanel('inv1-d')">
+          <div class="flex justify-between items-center text-xs">
+            <div><div class="text-white/60 text-[11px] font-medium">SUN2000-5KTL</div><div class="text-[9px] text-white/15 font-mono">38°C · 362V</div></div>
+            <div class="flex items-center gap-2"><span class="font-mono text-white/70" id="inv1">2.18 kW</span><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow shadow-emerald-400/50" style="animation:glow-pulse 2s infinite"></span></div>
+          </div>
+          <div id="inv1-d" class="expand-wrap"><div class="expand-inner"><div class="expand-panel" style="padding:8px 0 0 0"><div class="grid grid-cols-2 gap-2 text-[9px] text-white/20 pt-2 border-t border-white/[.04]">
+            <div>MPPT1 <span class="text-white/35 font-mono">1.12 kW</span></div><div>MPPT2 <span class="text-white/35 font-mono">1.06 kW</span></div>
+            <div>Eff. <span class="text-white/35 font-mono">97.8%</span></div><div>Today <span class="text-white/35 font-mono">14.2 kWh</span></div>
+          </div></div></div></div>
+        </div>
+        <div class="glass rounded-xl p-3 glass-click" onclick="togglePanel('inv2-d')">
+          <div class="flex justify-between items-center text-xs">
+            <div><div class="text-white/60 text-[11px] font-medium">SUN2000-5KTL #2</div><div class="text-[9px] text-white/15 font-mono">37°C · 358V</div></div>
+            <div class="flex items-center gap-2"><span class="font-mono text-white/70" id="inv2">2.14 kW</span><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow shadow-emerald-400/50" style="animation:glow-pulse 2s infinite"></span></div>
+          </div>
+          <div id="inv2-d" class="expand-wrap"><div class="expand-inner"><div class="expand-panel" style="padding:8px 0 0 0"><div class="grid grid-cols-2 gap-2 text-[9px] text-white/20 pt-2 border-t border-white/[.04]">
+            <div>MPPT1 <span class="text-white/35 font-mono">1.08 kW</span></div><div>MPPT2 <span class="text-white/35 font-mono">1.06 kW</span></div>
+            <div>Eff. <span class="text-white/35 font-mono">97.5%</span></div><div>Today <span class="text-white/35 font-mono">14.2 kWh</span></div>
+          </div></div></div></div>
+        </div>
+      </div>
+      <div class="mt-3 pt-2 border-t border-white/[.04] space-y-1 text-[9px]">
+        <div class="flex justify-between"><span class="text-white/15">Grid Voltage</span><span class="text-white/30 font-mono">233 V</span></div>
+        <div class="flex justify-between"><span class="text-white/15">Frequency</span><span class="text-white/30 font-mono">50.01 Hz</span></div>
+      </div>
+    </div>
+    <!-- Notifications -->
+    <div class="glass rounded-2xl p-5">
+      <div class="text-[8px] uppercase tracking-widest text-white/20 mb-3">Notifications</div>
+      <div class="space-y-2.5">
+        <div class="flex items-start gap-2.5 text-xs"><div class="w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5 shadow shadow-blue-400/30"></div><div class="flex-1"><div class="text-white/40">Production above monthly average</div><div class="text-[9px] text-white/15 font-mono mt-0.5">12:03</div></div></div>
+        <div class="h-px bg-white/[.03]"></div>
+        <div class="flex items-start gap-2.5 text-xs"><div class="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 shadow shadow-emerald-400/30"></div><div class="flex-1"><div class="text-white/40">Battery fully charged</div><div class="text-[9px] text-white/15 font-mono mt-0.5">11:42</div></div></div>
+        <div class="h-px bg-white/[.03]"></div>
+        <div class="flex items-start gap-2.5 text-xs"><div class="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 shadow shadow-amber-400/30"></div><div class="flex-1"><div class="text-white/40">Inverter #2 brief grid disconnect</div><div class="text-[9px] text-white/15 font-mono mt-0.5">08:17</div></div></div>
+        <div class="h-px bg-white/[.03]"></div>
+        <div class="flex items-start gap-2.5 text-xs"><div class="w-1.5 h-1.5 rounded-full bg-white/20 mt-1.5"></div><div class="flex-1"><div class="text-white/30">System started — sunrise</div><div class="text-[9px] text-white/15 font-mono mt-0.5">06:23</div></div></div>
+      </div>
+    </div>
+    <!-- Today's Summary -->
+    <div class="glass rounded-2xl p-5">
+      <div class="text-[8px] uppercase tracking-widest text-white/20 mb-3">Today's Summary</div>
+      <div class="space-y-2 text-xs">
+        <div class="flex justify-between items-center"><span class="text-white/25">Produced</span><div class="flex items-center gap-2"><div class="w-16 h-1 rounded-full bg-white/5 overflow-hidden"><div class="h-full bg-amber-400/40 rounded-full" style="width:73%"></div></div><span class="text-amber-400/70 font-mono text-[11px]">28.4 kWh</span></div></div>
+        <div class="flex justify-between items-center"><span class="text-white/25">Self-consumed</span><div class="flex items-center gap-2"><div class="w-16 h-1 rounded-full bg-white/5 overflow-hidden"><div class="h-full bg-cyan-400/40 rounded-full" style="width:57%"></div></div><span class="text-cyan-400/70 font-mono text-[11px]">16.1 kWh</span></div></div>
+        <div class="flex justify-between items-center"><span class="text-white/25">Fed to grid</span><div class="flex items-center gap-2"><div class="w-16 h-1 rounded-full bg-white/5 overflow-hidden"><div class="h-full bg-blue-400/40 rounded-full" style="width:30%"></div></div><span class="text-blue-400/70 font-mono text-[11px]">8.5 kWh</span></div></div>
+        <div class="flex justify-between items-center"><span class="text-white/25">From grid</span><div class="flex items-center gap-2"><div class="w-16 h-1 rounded-full bg-white/5 overflow-hidden"><div class="h-full bg-white/20 rounded-full" style="width:13%"></div></div><span class="text-white/40 font-mono text-[11px]">3.8 kWh</span></div></div>
+        <div class="h-px bg-white/[.04] my-1"></div>
+        <div class="flex justify-between"><span class="text-white/25">Peak</span><span class="text-amber-400/50 font-mono text-[11px]">7.2 kW @ 12:34</span></div>
+        <div class="flex justify-between"><span class="text-white/25">Best day (month)</span><span class="text-white/35 font-mono text-[11px]">38.7 kWh</span></div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="mt-6 text-center text-[8px] text-white/8 tracking-wider anim d6">
+    <span class="font-mono" id="last-sync"></span>
+  </footer>
+</div>
+
+<script>
+// ─── Particles ───
+const pC=document.getElementById('particles');
+for(let i=0;i<30;i++){const p=document.createElement('div');p.className='particle';p.style.cssText=`left:${Math.random()*100}%;top:${100+Math.random()*20}%;width:${Math.random()<.3?2:1}px;height:${Math.random()<.3?2:1}px;animation-duration:${15+Math.random()*25}s;animation-delay:${Math.random()*20}s;opacity:${.1+Math.random()*.2};`;pC.appendChild(p)}
+
+// ─── Clock ───
+function tick(){const n=new Date(),f=n.toLocaleString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'});document.getElementById('clock').textContent=f;document.getElementById('last-sync').textContent='SYNC '+n.toLocaleTimeString('de-DE')}
+tick();setInterval(tick,1000);
+
+// ─── Panels ───
+function togglePanel(id){const e=document.getElementById(id);if(e)e.classList.toggle('open')}
+
+// ─── Area Chart ───
+const canvas=document.getElementById('chart'),ctx=canvas.getContext('2d');
+function genToday(){const d=[];for(let h=5;h<=19;h++)d.push({x:h,y:Math.max(0,9.8*Math.exp(-.5*Math.pow((h-12)/3,2))*(.8+Math.random()*.2))});return d}
+function genWeek(){return['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map((l,i)=>({x:i,y:20+Math.random()*18,l}))}
+function genMonth(){const d=[];for(let i=1;i<=30;i++)d.push({x:i,y:15+Math.random()*24});return d}
+
+let chartType='today';
+function drawChart(data,maxY){
+  const dpr=window.devicePixelRatio||1,r=canvas.getBoundingClientRect();
+  canvas.width=r.width*dpr;canvas.height=r.height*dpr;ctx.scale(dpr,dpr);
+  const w=r.width,h=r.height,pad={t:8,r:8,b:20,l:32},cw=w-pad.l-pad.r,ch=h-pad.t-pad.b;
+  ctx.clearRect(0,0,w,h);
+  // Grid
+  ctx.strokeStyle='rgba(255,255,255,.03)';ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){const y=pad.t+ch-(i/4)*ch;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(w-pad.r,y);ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,.1)';ctx.font='9px JetBrains Mono';ctx.textAlign='right';ctx.fillText(Math.round(maxY*i/4),pad.l-4,y+3)}
+  // Area
+  ctx.beginPath();
+  data.forEach((p,i)=>{const x=pad.l+(i/(data.length-1))*cw,y=pad.t+ch-(p.y/maxY)*ch;
+    if(i===0)ctx.moveTo(x,y);else{const px=pad.l+((i-1)/(data.length-1))*cw,py=pad.t+ch-(data[i-1].y/maxY)*ch;ctx.bezierCurveTo((px+x)/2,py,(px+x)/2,y,x,y)}});
+  ctx.lineTo(pad.l+cw,pad.t+ch);ctx.lineTo(pad.l,pad.t+ch);ctx.closePath();
+  const grd=ctx.createLinearGradient(0,pad.t,0,pad.t+ch);grd.addColorStop(0,'rgba(245,158,11,.2)');grd.addColorStop(1,'rgba(245,158,11,0)');ctx.fillStyle=grd;ctx.fill();
+  // Line
+  ctx.beginPath();
+  data.forEach((p,i)=>{const x=pad.l+(i/(data.length-1))*cw,y=pad.t+ch-(p.y/maxY)*ch;
+    if(i===0)ctx.moveTo(x,y);else{const px=pad.l+((i-1)/(data.length-1))*cw,py=pad.t+ch-(data[i-1].y/maxY)*ch;ctx.bezierCurveTo((px+x)/2,py,(px+x)/2,y,x,y)}});
+  ctx.strokeStyle='rgba(245,158,11,.7)';ctx.lineWidth=2;ctx.stroke();
+  // Glow line
+  ctx.shadowColor='rgba(245,158,11,.4)';ctx.shadowBlur=8;ctx.stroke();ctx.shadowBlur=0;
+  // X labels
+  ctx.fillStyle='rgba(255,255,255,.08)';ctx.font='8px JetBrains Mono';ctx.textAlign='center';
+  const step=Math.max(1,Math.floor(data.length/6));
+  data.forEach((p,i)=>{if(i%step===0){const x=pad.l+(i/(data.length-1))*cw;ctx.fillText(p.l||p.x,x,h-4)}});
+}
+function switchChart(t,btn){chartType=t;document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  const m={today:10,week:40,month:40},g={today:genToday,week:genWeek,month:genMonth};drawChart(g[t](),m[t])}
+drawChart(genToday(),10);
+window.addEventListener('resize',()=>{const m={today:10,week:40,month:40},g={today:genToday,week:genWeek,month:genMonth};drawChart(g[chartType](),m[chartType])});
+
+// ─── Animated number helper ───
+function animNum(el,target,decimals=2){
+  const current=parseFloat(el.textContent)||0;
+  const diff=target-current;if(Math.abs(diff)<.01){el.textContent=target.toFixed(decimals);return}
+  let start=null;const dur=600;
+  function step(ts){if(!start)start=ts;const p=Math.min((ts-start)/dur,1);const ease=1-Math.pow(1-p,3);
+    el.textContent=(current+diff*ease).toFixed(decimals);if(p<1)requestAnimationFrame(step)}
+  requestAnimationFrame(step);
+}
+
+// ─── Simulate ───
+function r(b,v){return b+(Math.random()-.5)*2*v}
+setInterval(()=>{
+  const s=r(4.32,.3),h=r(1.87,.2),bt=r(1,.15),f=Math.max(0,s-h-bt),bp=Math.min(100,Math.floor(72+Math.random()*4));
+  // Hero
+  animNum(document.getElementById('hero'),s);
+  const cp=(s/9.8*100).toFixed(0);document.getElementById('cap-bar').style.width=cp+'%';document.getElementById('cap-pct').textContent=cp+'%';
+  // Metrics
+  animNum(document.getElementById('m-prod'),s);
+  animNum(document.getElementById('m-cons'),h);
+  animNum(document.getElementById('m-feed'),f);
+  document.getElementById('m-batt').textContent=bp+'%';
+  document.getElementById('m-batt-sub').textContent='+'+bt.toFixed(2)+' kW';
+  // Flow
+  document.getElementById('fl1').textContent=h.toFixed(2)+' kW';
+  document.getElementById('fl2').textContent=f.toFixed(2)+' kW';
+  document.getElementById('fl3').textContent='+'+bt.toFixed(2)+' kW';
+  document.getElementById('fm-solar').textContent=s.toFixed(2)+' kW';
+  document.getElementById('fm-home').textContent=h.toFixed(2)+' kW';
+  document.getElementById('fm-grid').textContent=f.toFixed(2)+' kW';
+  document.getElementById('fm-batt').textContent='+'+bt.toFixed(2)+' kW';
+  // Battery rings
+  document.getElementById('batt-ring').setAttribute('stroke-dashoffset',(201.06*(1-bp/100)).toFixed(2));
+  document.getElementById('ring-pct').textContent=bp+'%';
+  document.getElementById('batt-ring2').setAttribute('stroke-dashoffset',(213.63*(1-bp/100)).toFixed(2));
+  // Inverters
+  animNum(document.getElementById('inv1'),s/2+r(0,.05));
+  animNum(document.getElementById('inv2'),s/2-r(0,.05));
+  document.getElementById('inv1').textContent=(s/2+r(0,.05)).toFixed(2)+' kW';
+  document.getElementById('inv2').textContent=(s/2-r(0,.05)).toFixed(2)+' kW';
+},3000);
+
+// ─── PWA ───
+if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
+</script>
+</body>
+</html>
